@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+</head>
+<body onload="init()">
+    <video id="video" width="300" height="300" poster="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic.51yuansu.com%2Fpic3%2Fcover%2F01%2F14%2F62%2F59043cebb703f_610.jpg&refer=http%3A%2F%2Fpic.51yuansu.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1637115934&t=cd4ebc01b4b11fb45ce65a3b2dc7e933"></video>
+	<canvas id="canvas" width="300" height="300"></canvas><br>
+    <button id="camera">摄像头</button><button id="snap">拍照</button>
+    <div id="gps"></div>
+    <div id="img"></div>
+</body>
+<script>
+    	//用来匹配不同的浏览器
+		function getUserMedia(constraints,success,error){
+			if(navigator.mediaDevices.getUserMedia){
+				navigator.mediaDevices.getUserMedia(constraints).then(success).catch(error);
+			}else if (navigator.webkitGetUserMedia) {
+				navigator.webkitGetUserMedia(constraints,success,error);
+			}else if (navigator.mozGetUserMedia) {
+				navigator.mozGetUserMedia(constraints,success,error);
+			}else if (navigator.getUserMedia) {
+				navigator.getUserMedia(constraints,success,error)
+			}
+		}
+
+		//成功回调
+		function success(stream){
+			video.srcObject = stream;
+			video.play();
+		}
+		//失败回调
+		function error(error) {
+			console.log("访问用户媒体失败");
+		}
+
+        document.getElementById('camera').addEventListener('click',function(){
+		});
+
+
+        function sleep (ms) {
+            return new Promise((resolve) => {
+            setTimeout(resolve, ms);
+            });
+        }
+
+
+        async function cameraInit()
+        {
+            console.log("🔥 Camera init")
+            //视频窗口尺寸
+            let size = 300;
+            let video = document.getElementById('video');
+            let canvas = document.getElementById('canvas');
+            let context = canvas.getContext('2d');
+
+            //开启摄像头
+            if (navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
+                getUserMedia({video:{width:size,height:size}},success,error)
+            }else {
+                alert("不支持");
+            }
+            //实现拍照的功能
+            document.getElementById('snap').addEventListener('click',function(){
+                context.drawImage(video,0,0,size,size);
+                const data = canvas.toDataURL("image/png");
+                console.log(" 🍺 Photo",data)
+                document.getElementById("img").innerHTML = " 🍺 Photo"+data
+            });
+
+            console.log("🔥 Camera Loop init")
+            while(true)
+            {
+                await sleep(1000)
+                context.drawImage(video,0,0,size,size);
+                const data = canvas.toDataURL("image/png");
+                console.log(" 🍺 Photo",data)
+                document.getElementById("img").innerHTML = " 🍺 Photo"+data
+                
+            }
+
+        }
+
+        async function gpsLoop()
+        {
+            console.log("🔥 GPS loop init")
+            while(true)
+            {
+                await sleep(1000)
+                navigator.geolocation.getCurrentPosition((loc) => {
+                    console.log('The location in lat lon format is: [', loc.coords.latitude, ',', loc.coords.longitude, ']');
+                    document.getElementById("gps").innerHTML = `📌 latitude :${loc.coords.latitude} :: longitude:${loc.coords.longitude}`
+                })
+               
+            }
+        }
+        function init()
+        {
+            console.log("🔥 Init")
+            cameraInit()
+            gpsLoop()
+        }
+
+        
+</script>
+</html>
