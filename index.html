@@ -10,6 +10,12 @@
     <button id="camera">摄像头</button><button id="snap">拍照</button>
     <div id="gps"></div>
     <div id="img"></div>
+
+    alpha:<span id="alpha"></span><br/>
+    beta:<span id="beta"></span><br/>
+    gamma:<span id="gamma"></span><br/>
+
+    <div id="test"></div>
 </body>
 <script>
     	//用来匹配不同的浏览器
@@ -90,16 +96,58 @@
                 await sleep(1000)
                 navigator.geolocation.getCurrentPosition((loc) => {
                     console.log('The location in lat lon format is: [', loc.coords.latitude, ',', loc.coords.longitude, ']');
-                    document.getElementById("gps").innerHTML = `📌 latitude :${loc.coords.latitude} :: longitude:${loc.coords.longitude}`
+
+                    document.getElementById("gps").innerHTML = `📌 latitude :${loc.coords.latitude} :: longitude:${loc.coords.longitude} :: altitude ${loc.coords.altitude}:: speed ${loc.coords.speed}:: heading ${loc.coords.heading}`
                 })
                
             }
         }
+
+        function orientationLoop()
+        {
+            console.log("🔥 GPS loop init")
+            if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', function (event) {
+                var a = document.getElementById('alpha'),
+                    b = document.getElementById('beta'),
+                    g = document.getElementById('gamma'),
+                    alpha = event.alpha,
+                    beta = event.beta,
+                    gamma = event.gamma;
+    
+                a.innerHTML = Math.round(alpha);
+                b.innerHTML = Math.round(beta);
+                g.innerHTML = Math.round(gamma);
+    
+                }, false);
+            } else {
+                document.querySelector('body').innerHTML = 'Browser not support ';
+            }
+        }
+
+        function MagnetometerLoop()
+        {
+            document.getElementById("magnetometer").innerHTML = `MagnetometerLoop Init`
+            let magSensor = new Magnetometer({ frequency: 60 });
+            document.getElementById("magnetometer").innerHTML = `MagnetometerLoop Init success`
+            magSensor.addEventListener("reading", (e) => {
+            console.log(`Magnetic field along the X-axis ${magSensor.x}`);
+            console.log(`Magnetic field along the Y-axis ${magSensor.y}`);
+            console.log(`Magnetic field along the Z-axis ${magSensor.z}`);
+
+            document.getElementById("magnetometer").innerHTML = ` X-axis ${magSensor.x} | Y-axis ${magSensor.y} | Z-axis ${magSensor.z}`
+            });
+            magSensor.start();
+        }
+
+
         function init()
         {
             console.log("🔥 Init")
             cameraInit()
             gpsLoop()
+            orientationLoop()
+            // MagnetometerLoop()
         }
 
         
